@@ -26,6 +26,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
@@ -38,20 +39,6 @@ jobs:
       - name: Terraform Validate
         run: terraform validate
 
-      - name: Setup TFLint
-        uses: terraform-linters/setup-tflint@v4
-
-      - name: Initialize TFLint
-        run: tflint --init
-
-      - name: Run TFLint
-        run: tflint
-
-      - name: Run Checkov
-        uses: bridgecrewio/checkov-action@master
-        with:
-          directory: terraform
-          soft_fail: true
 
       # Pytest setup   
       - name: Setup Python
@@ -68,3 +55,26 @@ jobs:
       - name: Run Pytest
         run: pytest -v
         working-directory: app
+
+
+        # Docker build setup
+      - name: Build Docker Image
+        run: docker build -t devops-ecs-demo ./app
+
+
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@v4
+
+      - name: Initialize TFLint
+        run: tflint --init
+
+      - name: Run TFLint
+        run: tflint
+
+      # Security checks 
+      - name: Run Checkov
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: terraform
+          soft_fail: true
+
