@@ -13,11 +13,54 @@ on:
 
 jobs:
 
+  #################################################
+  # Change Detection
+  #
+  # Determines which parts of the repository
+  # have changed before running expensive jobs.
+  #################################################
+
+  changes:
+
+    name: Detect Changed Files
+
+    runs-on: ubuntu-24.04
+
+    outputs:
+      terraform: ${{ steps.filter.outputs.terraform }}
+      application: ${{ steps.filter.outputs.application }}
+
+    steps:
+
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Detect Changes
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            terraform:
+              - 'terraform/**'
+
+            application:
+              - 'app/**'
+
+  #################################################
+  # Terraform Validation
+  #
+  # Runs only when Terraform code changes.
+  #################################################
+
   terraform:
 
     name: Terraform Infrastructure Validation
 
-    runs-on: ubuntu-latest
+    needs: changes
+
+    if: needs.changes.outputs.terraform == 'true'
+
+    runs-on: ubuntu-24.04
 
     defaults:
       run:
@@ -28,27 +71,41 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      #################################################
+      # Terraform Installation
+      #################################################
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
-      # Terraform formatting 
+      #################################################
+      # Check Terraform Formatting
+      #################################################
+
       - name: Terraform Format Check
         run: terraform fmt -check -recursive
 
+      #################################################
+      # Download and Configure Providers
+      #################################################
 
-      # Terraform Init initializes the working directory containing Terraform configuration files.
       - name: Terraform Init
         run: terraform init
 
+      #################################################
+      # Validate Terraform Syntax
+      #################################################
 
-      # Validate checks for good syntax and internal consistency, 
-      # but does not access any remote services such as remote state, 
-      # provider APIs, etc.
       - name: Terraform Validate
         run: terraform validate
 
-      # TFLint is a Terraform linter for detecting errors that can not be detected by terraform validate 
-      # such as best practices, possible bugs, and style violations.
+      #################################################
+      # TFLint
+      #
+      # Detects Terraform best practice issues,
+      # provider-specific issues, and style problems.
+      #################################################
+
       - name: Setup TFLint
         uses: terraform-linters/setup-tflint@v4
 
@@ -58,20 +115,34 @@ jobs:
       - name: Run TFLint
         run: tflint
 
-      # Checkov is a static code analysis tool for infrastructure-as-code 
-      # that checks security and compliance misconfigurations.
+      #################################################
+      # Checkov Security Scanning
+      #
+      # Detects Terraform security and compliance
+      # issues before infrastructure is deployed.
+      #################################################
+
       - name: Run Checkov
         uses: bridgecrewio/checkov-action@master
         with:
           directory: terraform
           soft_fail: true
 
+  #################################################
+  # Application Validation
+  #
+  # Runs only when application code changes.
+  #################################################
 
   application:
 
     name: Application Code Testing
 
-    runs-on: ubuntu-latest
+    needs: changes
+
+    if: needs.changes.outputs.application == 'true'
+
+    runs-on: ubuntu-24.04
 
     defaults:
       run:
@@ -82,27 +153,42 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # Python setup is required to run the application tests and build the Docker image.
+      #################################################
+      # Python Installation
+      #################################################
+
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.13"
 
+      #################################################
+      # Install Runtime Dependencies
+      #################################################
+
       - name: Install Application Dependencies
-        run: |
-          pip install -r requirements.txt
+        run: pip install -r requirements.txt
+
+      #################################################
+      # Install Testing Dependencies
+      #################################################
 
       - name: Install Test Dependencies
-        run: |
-          pip install pytest
+        run: pip install -r requirements-dev.txt
 
-      # Pytests are used to test the application code for correctness and functionality.
+      #################################################
+      # Run Unit Tests
+      #################################################
+
       - name: Run Pytest
-        run: |
-          pytest -v
+        run: pytest -v
 
-      # Docker build is used to create a Docker image of the application code, 
-      # which can be deployed to a container orchestration platform like ECS.
+      #################################################
+      # Verify Container Build
+      #
+      # Ensures changes do not break the
+      # container image build process.
+      #################################################
+
       - name: Build Docker Image
-        run: |
-          docker build -t devops-ecs-demo .
+        run: docker build -t devops-ecs-demo .
