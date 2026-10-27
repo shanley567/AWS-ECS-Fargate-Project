@@ -7,7 +7,7 @@
 resource "aws_cloudwatch_log_group" "app" {
 
   name              = "/ecs/devops-ecs-demo"
-  retention_in_days = 2
+  retention_in_days = 1
 
   tags = local.common_tags
 }
