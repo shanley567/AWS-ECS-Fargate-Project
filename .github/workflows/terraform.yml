@@ -52,3 +52,19 @@ jobs:
         with:
           directory: terraform
           soft_fail: true
+
+      # Pytest setup   
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install Python Dependencies
+        run: |
+          pip install -r app/requirements.txt
+          pip install pytest
+        working-directory: .
+
+      - name: Run Pytest
+        run: pytest -v
+        working-directory: app
