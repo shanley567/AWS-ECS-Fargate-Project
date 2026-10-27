@@ -1,7 +1,4 @@
-```
-```
-
-AWS ECS Fargate Project
+# AWS ECS Fargate Project
 
 ## Overview
 
