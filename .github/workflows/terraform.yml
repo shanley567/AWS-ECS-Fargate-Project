@@ -1,4 +1,4 @@
-name: Terraform CI
+name: CI Pipeline
 
 on:
   push:
@@ -15,6 +15,8 @@ jobs:
 
   terraform:
 
+    name: Terraform Validation
+
     runs-on: ubuntu-latest
 
     defaults:
@@ -26,9 +28,9 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
+
 
       - name: Terraform Format Check
         run: terraform fmt -check -recursive
@@ -40,28 +42,6 @@ jobs:
         run: terraform validate
 
 
-      # Pytest setup   
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.13"
-
-      - name: Install Python Dependencies
-        run: |
-          pip install -r app/requirements.txt
-          pip install pytest
-        working-directory: .
-
-      - name: Run Pytest
-        run: pytest -v
-        working-directory: app
-
-
-        # Docker build setup
-      - name: Build Docker Image
-        run: docker build -t devops-ecs-demo ../app
-
-
       - name: Setup TFLint
         uses: terraform-linters/setup-tflint@v4
 
@@ -71,10 +51,48 @@ jobs:
       - name: Run TFLint
         run: tflint
 
-      # Security checks 
+
       - name: Run Checkov
         uses: bridgecrewio/checkov-action@master
         with:
           directory: terraform
           soft_fail: true
 
+
+  application:
+
+    name: Application Testing
+
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: app
+
+    steps:
+
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install Application Dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Install Test Dependencies
+        run: |
+          pip install pytest
+
+      - name: Run Pytest
+        run: |
+          pytest -v
+
+          
+      - name: Build Docker Image
+        run: |
+          docker build -t devops-ecs-demo .
