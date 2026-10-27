@@ -15,7 +15,7 @@ jobs:
 
   terraform:
 
-    name: Terraform Validation
+    name: Terraform Infrastructure Validation
 
     runs-on: ubuntu-latest
 
@@ -31,17 +31,24 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
-
+      # Terraform formatting 
       - name: Terraform Format Check
         run: terraform fmt -check -recursive
 
+
+      # Terraform Init initializes the working directory containing Terraform configuration files.
       - name: Terraform Init
         run: terraform init
 
+
+      # Validate checks for good syntax and internal consistency, 
+      # but does not access any remote services such as remote state, 
+      # provider APIs, etc.
       - name: Terraform Validate
         run: terraform validate
 
-
+      # TFLint is a Terraform linter for detecting errors that can not be detected by terraform validate 
+      # such as best practices, possible bugs, and style violations.
       - name: Setup TFLint
         uses: terraform-linters/setup-tflint@v4
 
@@ -51,7 +58,8 @@ jobs:
       - name: Run TFLint
         run: tflint
 
-
+      # Checkov is a static code analysis tool for infrastructure-as-code 
+      # that checks security and compliance misconfigurations.
       - name: Run Checkov
         uses: bridgecrewio/checkov-action@master
         with:
@@ -61,7 +69,7 @@ jobs:
 
   application:
 
-    name: Application Testing
+    name: Application Code Testing
 
     runs-on: ubuntu-latest
 
@@ -74,7 +82,7 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-
+      # Python setup is required to run the application tests and build the Docker image.
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
@@ -88,11 +96,13 @@ jobs:
         run: |
           pip install pytest
 
+      # Pytests are used to test the application code for correctness and functionality.
       - name: Run Pytest
         run: |
           pytest -v
 
-          
+      # Docker build is used to create a Docker image of the application code, 
+      # which can be deployed to a container orchestration platform like ECS.
       - name: Build Docker Image
         run: |
           docker build -t devops-ecs-demo .
