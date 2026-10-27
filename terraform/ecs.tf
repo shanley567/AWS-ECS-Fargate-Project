@@ -53,7 +53,7 @@ resource "aws_ecs_task_definition" "app" {
   container_definitions = jsonencode([
     {
 
-      name  = "devops-ecs-demo"
+      name = "devops-ecs-demo"
 
       image = "${aws_ecr_repository.app.repository_url}:latest"
 
