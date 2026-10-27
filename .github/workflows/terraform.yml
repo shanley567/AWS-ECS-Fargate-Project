@@ -59,7 +59,7 @@ jobs:
 
         # Docker build setup
       - name: Build Docker Image
-        run: docker build -t devops-ecs-demo ./app
+        run: docker build -t devops-ecs-demo ../app
 
 
       - name: Setup TFLint
