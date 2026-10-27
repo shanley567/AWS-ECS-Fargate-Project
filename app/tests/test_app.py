@@ -22,3 +22,12 @@ def test_health_response():
     }
 
     assert response.get_json() == expected
+
+
+def test_invalid_url():
+
+    client = app.test_client()
+
+    response = client.get("/invalid")
+
+    assert response.status_code == 404
