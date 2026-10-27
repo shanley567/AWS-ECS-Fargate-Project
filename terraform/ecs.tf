@@ -13,3 +13,20 @@ resource "aws_cloudwatch_log_group" "app" {
 }
 
 
+#################################################
+# ECS Cluster
+#
+# Logical container hosting platform.
+#################################################
+
+resource "aws_ecs_cluster" "main" {
+
+  name = "devops-ecs-demo-cluster"
+
+  tags = merge(
+    local.common_tags,
+    {
+      Name = "devops-ecs-demo-cluster"
+    }
+  )
+}
