@@ -85,3 +85,46 @@ resource "aws_lb" "app" {
 }
 
 
+#################################################
+# Target Group
+#
+# Registers ECS tasks behind the ALB.
+#################################################
+
+resource "aws_lb_target_group" "app" {
+
+  name = "devops-ecs-demo-tg"
+
+  port     = 5000
+  protocol = "HTTP"
+
+  target_type = "ip"
+
+  vpc_id = aws_vpc.main.id
+
+  #################################################
+  # Health Checks
+  #
+  # Calls:
+  # GET /
+  #################################################
+
+  health_check {
+
+    path = "/"
+
+    protocol = "HTTP"
+
+    matcher = "200"
+
+    healthy_threshold = 2
+
+    unhealthy_threshold = 2
+
+    timeout = 5
+
+    interval = 30
+  }
+
+  tags = local.common_tags
+}
