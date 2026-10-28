@@ -39,3 +39,12 @@ output "ecs_execution_role_arn" {
 output "task_definition_arn" {
   value = aws_ecs_task_definition.app.arn
 }
+
+
+#################################################
+# ECS Service Name
+#################################################
+
+output "ecs_service_name" {
+  value = aws_ecs_service.app.name
+}
