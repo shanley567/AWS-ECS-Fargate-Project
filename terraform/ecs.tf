@@ -131,4 +131,20 @@ resource "aws_ecs_service" "app" {
       Name = "devops-ecs-demo-service"
     }
   )
+
+  #################################################
+  # Register ECS Tasks With Target Group
+  #
+  # Allows the ALB to send traffic
+  # to running containers.
+  #################################################
+
+  load_balancer {
+
+    target_group_arn = aws_lb_target_group.app.arn
+
+    container_name = "devops-ecs-demo"
+
+    container_port = 5000
+  }
 }
