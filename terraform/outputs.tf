@@ -48,3 +48,14 @@ output "task_definition_arn" {
 output "ecs_service_name" {
   value = aws_ecs_service.app.name
 }
+
+#################################################
+# ALB DNS Name
+#
+# Public URL for application access.
+#################################################
+
+output "alb_dns_name" {
+
+  value = aws_lb.app.dns_name
+}
