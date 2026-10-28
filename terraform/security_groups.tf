@@ -25,8 +25,8 @@ resource "aws_security_group" "ecs_tasks" {
 
     protocol = "tcp"
 
-    cidr_blocks = [
-      "0.0.0.0/0"
+    security_groups = [
+      aws_security_group.alb.id
     ]
   }
 
