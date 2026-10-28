@@ -318,13 +318,11 @@ locals {
 
 ✅ CloudWatch Logging
 
-### In Progress
+✅ ECS Task Definition
 
-🚧 ECS Task Definition
+✅ ECS Service
 
-🚧 ECS Service
-
-🚧 Security Groups
+✅ Security Groups
 
 ### Planned
 
@@ -395,4 +393,4 @@ This project demonstrates practical experience with:
 
 ## Next Milestone
 
-Deploy the first running ECS Fargate task using the Docker image stored in Amazon ECR, then expose the application through an Application Load Balancer.
+Expose the application through an Application Load Balancer.
