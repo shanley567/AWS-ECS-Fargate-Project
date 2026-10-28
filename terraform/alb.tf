@@ -51,3 +51,37 @@ resource "aws_security_group" "alb" {
     }
   )
 }
+
+
+#################################################
+# Application Load Balancer
+#
+# Public entry point into the application.
+#################################################
+
+resource "aws_lb" "app" {
+
+  name = "devops-ecs-demo-alb"
+
+  internal = false
+
+  load_balancer_type = "application"
+
+  security_groups = [
+    aws_security_group.alb.id
+  ]
+
+  subnets = [
+    aws_subnet.public_a.id,
+    aws_subnet.public_b.id
+  ]
+
+  tags = merge(
+    local.common_tags,
+    {
+      Name = "devops-ecs-demo-alb"
+    }
+  )
+}
+
+
