@@ -35,6 +35,14 @@ jobs:
         uses: actions/checkout@v4
 
       #################################################
+        # Temporary debug step to verify GitHub context and OIDC authentication
+      #################################################
+      - name: Debug GitHub Context
+        run: |
+          echo "Repository: ${{ github.repository }}"
+          echo "Ref: ${{ github.ref }}"
+
+      #################################################
       # Authenticate to AWS
       #
       # Uses OpenID Connect (OIDC) to authenticate to AWS and assume a role.
