@@ -22,7 +22,8 @@ jobs:
     runs-on: ubuntu-24.04
 
     permissions:
-      contents: read
+        id-token: write
+        contents: read
 
     steps:
 
@@ -36,15 +37,13 @@ jobs:
       #################################################
       # Authenticate to AWS
       #
-      # Uses GitHub Secrets for now.
-      # Later we will replace with OIDC.
+      # Uses OpenID Connect (OIDC) to authenticate to AWS and assume a role.
       #################################################
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          role-to-assume: arn:aws:iam::548722508417:role/GitHubECSDeployRole
           aws-region: eu-north-1
 
       #################################################
