@@ -47,6 +47,14 @@ jobs:
           aws-region: eu-north-1
 
       #################################################
+      # Verify OIDC Authentication
+      #################################################
+
+      - name: Verify AWS Identity
+        run: |
+          aws sts get-caller-identity
+
+      #################################################
       # Login to Elastic Container Registry
       #################################################
 
