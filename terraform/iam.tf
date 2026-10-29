@@ -43,3 +43,55 @@ resource "aws_iam_role_policy_attachment" "ecs_task_execution" {
 
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
+
+# ECS Task Role
+# Grants the ECS task permissions to access AWS services
+resource "aws_iam_role_policy" "github_ecs_deploy" {
+
+  name = "GitHubECSDeployPolicy"
+
+  role = aws_iam_role.github_ecs_deploy.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+
+    Statement = [
+
+      {
+        Effect = "Allow"
+
+        Action = [
+          "ecr:GetAuthorizationToken"
+        ]
+
+        Resource = "*"
+      },
+
+      {
+        Effect = "Allow"
+
+        Action = [
+          "ecr:BatchCheckLayerAvailability",
+          "ecr:CompleteLayerUpload",
+          "ecr:InitiateLayerUpload",
+          "ecr:PutImage",
+          "ecr:UploadLayerPart",
+          "ecr:BatchGetImage"
+        ]
+
+        Resource = aws_ecr_repository.app.arn
+      },
+
+      {
+        Effect = "Allow"
+
+        Action = [
+          "ecs:UpdateService",
+          "ecs:DescribeServices"
+        ]
+
+        Resource = "*"
+      }
+    ]
+  })
+}
