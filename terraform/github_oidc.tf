@@ -26,7 +26,7 @@ resource "aws_iam_role" "github_ecs_deploy" {
           }
 
           StringLike = {
-            "token.actions.githubusercontent.com:sub" = "repo:shanley567/AWS-ECS-Fargate-Project:ref:refs/heads/main"
+            "token.actions.githubusercontent.com:sub" = "repo:shanley567/AWS-ECS-Fargate-Project:*"
           }
         }
       }
