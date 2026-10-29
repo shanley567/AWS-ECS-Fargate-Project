@@ -1,8 +1,3 @@
-######################################
-# OpenID Connect (OIDC) allows GitHub Actions 
-# to authenticate with AWS and 
-# assume this role to deploy the ECS service.
-######################################
 resource "aws_iam_role" "github_ecs_deploy" {
 
   name = "GitHubECSDeployRole"
@@ -23,10 +18,7 @@ resource "aws_iam_role" "github_ecs_deploy" {
         Condition = {
           StringEquals = {
             "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com"
-          }
-
-          StringLike = {
-            "token.actions.githubusercontent.com:sub" = "repo:shanley567/AWS-ECS-Fargate-Project:*"
+            "token.actions.githubusercontent.com:sub" = "repo:shanley567/AWS-ECS-Fargate-Project:ref:refs/heads/main"
           }
         }
       }
