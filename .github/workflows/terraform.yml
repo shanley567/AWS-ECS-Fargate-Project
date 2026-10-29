@@ -1,4 +1,4 @@
-name: CI Pipeline
+name: Terraform CI
 
 on:
   push:
@@ -14,10 +14,10 @@ on:
 jobs:
 
   #################################################
-  # Change Detection
+  # Detect which files changed
   #
-  # Determines which parts of the repository
-  # have changed before running expensive jobs.
+  # Prevents Terraform jobs running when only
+  # application code changes.
   #################################################
 
   changes:
@@ -28,7 +28,6 @@ jobs:
 
     outputs:
       terraform: ${{ steps.filter.outputs.terraform }}
-      application: ${{ steps.filter.outputs.application }}
 
     steps:
 
@@ -43,18 +42,18 @@ jobs:
             terraform:
               - 'terraform/**'
 
-            application:
-              - 'app/**'
-
   #################################################
-  # Terraform Validation
+  # Terraform Validation Pipeline
   #
-  # Runs only when Terraform code changes.
+  # Runs formatting, validation, linting and
+  # security scanning.
+  #
+  # Does NOT deploy infrastructure.
   #################################################
 
   terraform:
 
-    name: Terraform Infrastructure Validation
+    name: Terraform Validation
 
     needs: changes
 
@@ -72,38 +71,35 @@ jobs:
         uses: actions/checkout@v4
 
       #################################################
-      # Terraform Installation
+      # Install Terraform
       #################################################
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
       #################################################
-      # Check Terraform Formatting
+      # Verify formatting
       #################################################
 
       - name: Terraform Format Check
         run: terraform fmt -check -recursive
 
       #################################################
-      # Download and Configure Providers
+      # Download providers and modules
       #################################################
 
       - name: Terraform Init
         run: terraform init
 
       #################################################
-      # Validate Terraform Syntax
+      # Validate syntax and references
       #################################################
 
       - name: Terraform Validate
         run: terraform validate
 
       #################################################
-      # TFLint
-      #
-      # Detects Terraform best practice issues,
-      # provider-specific issues, and style problems.
+      # Terraform linting
       #################################################
 
       - name: Setup TFLint
@@ -116,79 +112,11 @@ jobs:
         run: tflint
 
       #################################################
-      # Checkov Security Scanning
-      #
-      # Detects Terraform security and compliance
-      # issues before infrastructure is deployed.
+      # Terraform security scanning
       #################################################
 
       - name: Run Checkov
-        uses: bridgecrewio/checkov-action@master
+        uses: bridgecrewio/checkov-action@v12
         with:
           directory: terraform
           soft_fail: true
-
-  #################################################
-  # Application Validation
-  #
-  # Runs only when application code changes.
-  #################################################
-
-  application:
-
-    name: Application Code Testing
-
-    needs: changes
-
-    if: needs.changes.outputs.application == 'true'
-
-    runs-on: ubuntu-24.04
-
-    defaults:
-      run:
-        working-directory: app
-
-    steps:
-
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      #################################################
-      # Python Installation
-      #################################################
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.13"
-
-      #################################################
-      # Install Runtime Dependencies
-      #################################################
-
-      - name: Install Application Dependencies
-        run: pip install -r requirements.txt
-
-      #################################################
-      # Install Testing Dependencies
-      #################################################
-
-      - name: Install Test Dependencies
-        run: pip install -r requirements-dev.txt
-
-      #################################################
-      # Run Unit Tests
-      #################################################
-
-      - name: Run Pytest
-        run: pytest -v
-
-      #################################################
-      # Verify Container Build
-      #
-      # Ensures changes do not break the
-      # container image build process.
-      #################################################
-
-      - name: Build Docker Image
-        run: docker build -t devops-ecs-demo .

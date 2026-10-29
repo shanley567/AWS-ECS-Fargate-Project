@@ -1,0 +1,110 @@
+name: Deploy ECS Application
+
+on:
+
+  #################################################
+  # Deploy only when application code changes
+  #################################################
+
+  push:
+    branches:
+      - main
+
+    paths:
+      - 'app/**'
+
+jobs:
+
+  deploy:
+
+    name: Build And Deploy ECS
+
+    runs-on: ubuntu-24.04
+
+    permissions:
+      contents: read
+
+    steps:
+
+      #################################################
+      # Download repository
+      #################################################
+
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      #################################################
+      # Authenticate to AWS
+      #
+      # Uses GitHub Secrets for now.
+      # Later we will replace with OIDC.
+      #################################################
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-north-1
+
+      #################################################
+      # Login to Elastic Container Registry
+      #################################################
+
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      #################################################
+      # Build container image
+      #################################################
+
+      - name: Build Docker Image
+        run: |
+          docker build -t devops-ecs-demo ./app
+
+      #################################################
+      # Tag image for ECR repository
+      #################################################
+
+      - name: Tag Docker Image
+        run: |
+          docker tag devops-ecs-demo:latest \
+            548722508417.dkr.ecr.eu-north-1.amazonaws.com/devops-ecs-demo:latest
+
+      #################################################
+      # Push image to ECR
+      #################################################
+
+      - name: Push Image To ECR
+        run: |
+          docker push \
+            548722508417.dkr.ecr.eu-north-1.amazonaws.com/devops-ecs-demo:latest
+
+      #################################################
+      # Trigger ECS deployment
+      #
+      # ECS pulls the newest image and
+      # replaces running tasks.
+      #################################################
+
+      - name: Force ECS Deployment
+        run: |
+          aws ecs update-service \
+            --cluster devops-ecs-demo-cluster \
+            --service devops-ecs-demo-service \
+            --force-new-deployment \
+            --region eu-north-1
+
+      #################################################
+      # Wait for deployment completion
+      #
+      # Prevents successful workflow if
+      # ECS deployment actually fails.
+      #################################################
+
+      - name: Wait For ECS Stability
+        run: |
+          aws ecs wait services-stable \
+            --cluster devops-ecs-demo-cluster \
+            --services devops-ecs-demo-service \
+            --region eu-north-1
