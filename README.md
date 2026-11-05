@@ -2,11 +2,11 @@
 
 ## Overview
 
-This project demonstrates the design, deployment, operation, and troubleshooting of a containerised Python web application on AWS using modern DevOps practices.
+This project demonstrates the design, deployment, operation, monitoring, and troubleshooting of a containerised Python web application on AWS using modern DevOps and Site Reliability Engineering (SRE) practices.
 
-The application is packaged as a Docker image, stored in Amazon Elastic Container Registry (ECR), and deployed to Amazon ECS Fargate behind an Application Load Balancer (ALB). Infrastructure is provisioned and managed using Terraform, while GitHub Actions provides automated validation and security scanning.
+The application is packaged as a Docker image, stored in Amazon Elastic Container Registry (ECR), and deployed to Amazon ECS Fargate behind an Application Load Balancer (ALB). Infrastructure is fully provisioned using Terraform and validated through GitHub Actions.
 
-The project also includes production-oriented monitoring, scaling, encryption, and operational troubleshooting documentation.
+The project was created to validate the end-to-end process of deploying containerised workloads to ECS Fargate and operating them using production-style monitoring, scaling, security controls, and troubleshooting procedures.
 
 ---
 
@@ -23,7 +23,8 @@ This project demonstrates:
 - CloudWatch Monitoring
 - ECS Auto Scaling
 - Security Validation
-- Cloud Infrastructure Troubleshooting
+- Operational Troubleshooting
+- Site Reliability Engineering Principles
 
 ---
 
@@ -38,27 +39,26 @@ GitHub Actions
     ├── Terraform Validation
     ├── TFLint
     ├── Checkov
-    ├── Pytest
-    └── Docker Build
-            │
-            ▼
+    ├── Docker Build Validation
+    │
+    ▼
 Amazon ECR
-            │
-            ▼
+    │
+    ▼
 Amazon ECS Fargate
-            │
-            ▼
+    │
+    ▼
 Application Load Balancer
-            │
-            ▼
+    │
+    ▼
 End Users
 
-ECS Platform
+Monitoring
     │
     ├── CloudWatch Logs
     ├── CloudWatch Dashboard
-    ├── Container Insights
-    └── Auto Scaling Policies
+    ├── ECS Container Insights
+    └── Auto Scaling Metrics
 ```
 
 ---
@@ -99,6 +99,9 @@ ECS Platform
 - CloudWatch Log Group
 - CloudWatch Dashboard
 - ECS Container Insights
+- ECS Service Metrics
+- Application Load Balancer Metrics
+- Auto Scaling Metrics
 
 ### Scaling
 
@@ -112,6 +115,58 @@ ECS Platform
 - CloudWatch Log Encryption (KMS)
 - Read-Only Root Filesystem
 - Checkov Security Scanning
+
+---
+
+## Monitoring & Observability
+
+A service-centric SRE dashboard has been implemented using Amazon CloudWatch.
+
+The dashboard focuses on availability, performance, traffic, scaling, and service health.
+
+### Dashboard Metrics
+
+#### Service Health
+
+- Running Tasks
+- Pending Tasks
+- Healthy Target Count
+- Desired vs Running Tasks
+
+#### Performance
+
+- CPU Utilisation
+- Memory Utilisation
+- Target Response Time
+
+#### Traffic
+
+- Request Count
+
+#### Reliability
+
+- HTTP 4XX Errors
+- HTTP 5XX Errors
+
+### Operational Benefits
+
+The dashboard is designed to answer:
+
+1. Is the service healthy?
+2. Is the service available?
+3. Is the application receiving traffic?
+4. Is ECS maintaining desired capacity?
+5. Are users seeing errors?
+6. Is application performance degrading?
+
+This enables rapid diagnosis of issues such as:
+
+- Failed deployments
+- Missing ECR images
+- Container startup failures
+- Unhealthy ECS tasks
+- Auto Scaling issues
+- Load Balancer target failures
 
 ---
 
@@ -165,7 +220,7 @@ ECS Platform
 
 #### GET /
 
-Response:
+Response
 
 ```json
 {
@@ -260,7 +315,7 @@ terraform destroy
 
 ### Terraform Validation Workflow
 
-The infrastructure workflow automatically performs:
+Automatically performs:
 
 - Terraform Format Validation
 - Terraform Validation
@@ -269,7 +324,7 @@ The infrastructure workflow automatically performs:
 
 ### Application Workflow
 
-The application workflow automatically performs:
+Automatically performs:
 
 - Source Checkout
 - Docker Build Validation
@@ -287,7 +342,7 @@ Current controls include:
 - ECR Image Scanning
 - ECR Immutable Tags
 - CloudWatch Log Encryption
-- Read-Only Container Filesystem
+- Read-Only Root Filesystem
 - ECS Container Insights
 - IAM Least-Privilege Execution Role
 - Infrastructure Tagging Strategy
@@ -297,9 +352,7 @@ Current controls include:
 
 ## Terraform Standards
 
-All resources are tagged using shared Terraform locals.
-
-Example:
+All infrastructure resources inherit a common tagging strategy:
 
 ```hcl
 locals {
@@ -329,6 +382,7 @@ locals {
 - [x] AWS VPC
 - [x] Public Subnets
 - [x] Internet Gateway
+- [x] Route Tables
 - [x] Security Groups
 - [x] Application Load Balancer
 - [x] Target Group
@@ -336,12 +390,15 @@ locals {
 - [x] ECS Service
 - [x] ECS Task Definition
 - [x] Amazon ECR
-- [x] CloudWatch Logging
 
-### Monitoring
+### Monitoring & Observability
 
 - [x] CloudWatch Dashboard
+- [x] CloudWatch Logs
 - [x] ECS Container Insights
+- [x] ECS Service Metrics
+- [x] ALB Metrics
+- [x] Auto Scaling Metrics
 
 ### Scaling
 
@@ -372,17 +429,17 @@ locals {
 
 ✅ ECS Service deployed
 
+✅ ECS Service healthy
+
 ✅ ECS Task healthy
 
-✅ ALB healthy
+✅ Application Load Balancer healthy
 
 ✅ Target Group healthy
 
-✅ CloudWatch Logs enabled
+✅ CloudWatch Monitoring enabled
 
-✅ CloudWatch Dashboard enabled
-
-✅ ECS Container Insights enabled
+✅ Container Insights enabled
 
 ✅ Auto Scaling configured
 
@@ -390,58 +447,23 @@ locals {
 
 ---
 
-### Verified Commands
-
-```powershell
-aws ecs describe-services
-```
-
-Result:
-
-```text
-runningCount = 1
-```
-
----
-
-```powershell
-aws elbv2 describe-target-health
-```
-
-Result:
-
-```text
-healthy
-```
-
----
-
-Application response:
-
-```json
-{
-  "service": "devops-ecs-demo",
-  "status": "healthy"
-}
-```
-
----
-
 ## Key Lessons Learned
 
-This project provided hands-on experience with:
+This project provided practical experience with:
 
 - Terraform resource lifecycle management
+- AWS networking
 - ECS Fargate deployments
 - ECR image management
 - CloudWatch monitoring
+- SRE dashboard design
 - ECS rolling deployments
+- Auto Scaling
 - Container security hardening
 - CI/CD validation pipelines
-- Infrastructure troubleshooting
 - Diagnosing ECS task failures
 - Recovering from ECR repository replacement
-- Analysing Terraform resource replacement impacts
+- Understanding Terraform resource replacement impacts
 
 ---
 
@@ -451,8 +473,10 @@ This project provided hands-on experience with:
 - [ ] Route53 DNS Integration
 - [ ] ALB Access Logging
 - [ ] CloudWatch Alarms
+- [ ] Secrets Manager Integration
 - [ ] GitHub Actions ECS Deployment
 - [ ] GitHub OIDC Authentication
+- [ ] Blue/Green ECS Deployments
 
 ---
 
@@ -497,10 +521,11 @@ This project provided hands-on experience with:
 
 Operational runbooks:
 
-- [ECR Image Recovery](docs/troubleshooting/ecr-image-recovery.md)
+- docs/troubleshooting/ecr-image-recovery.md
 
-Future runbooks:
+Planned runbooks:
 
 - ECS Service Unhealthy
-- Terraform State Recoveryures
+- Terraform State Recovery
+- GitHub Actions Failures
 - ECS Deployment Failures
