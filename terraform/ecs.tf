@@ -66,6 +66,9 @@ resource "aws_ecs_task_definition" "app" {
 
       essential = true
 
+      # Prevents the container from writing to the root filesystem, enhancing security
+      "readonlyRootFilesystem": true
+
       portMappings = [
         {
           containerPort = 5000
