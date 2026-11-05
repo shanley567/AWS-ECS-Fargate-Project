@@ -38,6 +38,7 @@ resource "aws_security_group" "ecs_tasks" {
   #################################################
 
   egress {
+    description = "Allow outbound traffic"
 
     from_port = 0
     to_port   = 0
