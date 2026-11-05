@@ -478,6 +478,8 @@ This project demonstrates practical experience with:
 
 ---
 
-## Next Milestone
+# Troubleshooting
 
-Expose the application through an Application Load Balancer.
+Common operational issues can be found in:
+
+- [ECR Image Recovery](docs/troubleshooting/ecr-image-recovery.md)
