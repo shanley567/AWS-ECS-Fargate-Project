@@ -24,6 +24,12 @@ resource "aws_ecs_cluster" "main" {
 
   name = "devops-ecs-demo-cluster"
 
+# Send metrics to cloudwatch for monitoring, debugging and autoscaling
+  setting {
+    name  = "containerInsights"
+    value = "enabled"
+  }
+
   tags = merge(
     local.common_tags,
     {
