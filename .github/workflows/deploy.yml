@@ -1,15 +1,9 @@
 name: Deploy ECS Application
 
 on:
-
-  #################################################
-  # Deploy only when application code changes
-  #################################################
-
   push:
     branches:
       - main
-
     paths:
       - 'app/**'
 
@@ -17,30 +11,14 @@ jobs:
 
   deploy:
 
-    name: Build And Deploy ECS
+    name: Build Application
 
     runs-on: ubuntu-24.04
 
-    permissions:
-        id-token: write
-        contents: read
-
     steps:
-
-      #################################################
-      # Download repository
-      #################################################
 
       - name: Checkout Repository
         uses: actions/checkout@v4
-
-      #################################################
-        # Temporary debug step to verify GitHub context and OIDC authentication
-      #################################################
-      - name: Debug GitHub Context
-        run: |
-          echo "Repository: ${{ github.repository }}"
-          echo "Ref: ${{ github.ref }}"
 
       - name: Show GitHub Context
         run: |
@@ -49,84 +27,10 @@ jobs:
           echo "Actor: ${{ github.actor }}"
           echo "Event Name: ${{ github.event_name }}"
 
-      #################################################
-      # Authenticate to AWS
-      #
-      # Uses OpenID Connect (OIDC) to authenticate to AWS and assume a role.
-      #################################################
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: arn:aws:iam::548722508417:role/GitHubECSDeployRole
-          aws-region: eu-north-1
-
-      #################################################
-      # Verify OIDC Authentication
-      #################################################
-
-      - name: Verify AWS Identity
-        run: |
-          aws sts get-caller-identity
-
-      #################################################
-      # Login to Elastic Container Registry
-      #################################################
-
-      - name: Login to Amazon ECR
-        uses: aws-actions/amazon-ecr-login@v2
-
-      #################################################
-      # Build container image
-      #################################################
-
       - name: Build Docker Image
         run: |
           docker build -t devops-ecs-demo ./app
 
-      #################################################
-      # Tag image for ECR repository
-      #################################################
-
-      - name: Tag Docker Image
+      - name: Verify Image Created
         run: |
-          docker tag devops-ecs-demo:latest \
-            548722508417.dkr.ecr.eu-north-1.amazonaws.com/devops-ecs-demo:latest
-
-      #################################################
-      # Push image to ECR
-      #################################################
-
-      - name: Push Image To ECR
-        run: |
-          docker push \
-            548722508417.dkr.ecr.eu-north-1.amazonaws.com/devops-ecs-demo:latest
-
-      #################################################
-      # Trigger ECS deployment
-      #
-      # ECS pulls the newest image and
-      # replaces running tasks.
-      #################################################
-
-      - name: Force ECS Deployment
-        run: |
-          aws ecs update-service \
-            --cluster devops-ecs-demo-cluster \
-            --service devops-ecs-demo-service \
-            --force-new-deployment \
-            --region eu-north-1
-
-      #################################################
-      # Wait for deployment completion
-      #
-      # Prevents successful workflow if
-      # ECS deployment actually fails.
-      #################################################
-
-      - name: Wait For ECS Stability
-        run: |
-          aws ecs wait services-stable \
-            --cluster devops-ecs-demo-cluster \
-            --services devops-ecs-demo-service \
-            --region eu-north-1
+          docker images

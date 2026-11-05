@@ -13,13 +13,6 @@ on:
 
 jobs:
 
-  #################################################
-  # Detect which files changed
-  #
-  # Prevents Terraform jobs running when only
-  # application code changes.
-  #################################################
-
   changes:
 
     name: Detect Changed Files
@@ -42,15 +35,6 @@ jobs:
             terraform:
               - 'terraform/**'
 
-  #################################################
-  # Terraform Validation Pipeline
-  #
-  # Runs formatting, validation, linting and
-  # security scanning.
-  #
-  # Does NOT deploy infrastructure.
-  #################################################
-
   terraform:
 
     name: Terraform Validation
@@ -70,37 +54,18 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      #################################################
-      # Install Terraform
-      #################################################
-
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
-      #################################################
-      # Verify formatting
-      #################################################
 
       - name: Terraform Format Check
         run: terraform fmt -check -recursive
 
-      #################################################
-      # Download providers and modules
-      #################################################
-
       - name: Terraform Init
         run: terraform init
 
-      #################################################
-      # Validate syntax and references
-      #################################################
-
       - name: Terraform Validate
         run: terraform validate
-
-      #################################################
-      # Terraform linting
-      #################################################
 
       - name: Setup TFLint
         uses: terraform-linters/setup-tflint@v4
@@ -110,10 +75,7 @@ jobs:
 
       - name: Run TFLint
         run: tflint
-
-      #################################################
-      # Terraform security scanning
-      #################################################
+        
 
       - name: Run Checkov
         uses: bridgecrewio/checkov-action@v12
