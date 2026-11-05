@@ -2,11 +2,11 @@
 
 ## Overview
 
-This project demonstrates how to build, test, containerize, and deploy a Python web application into AWS using modern DevOps practices.
+This project demonstrates the design, deployment, operation, and troubleshooting of a containerised Python web application on AWS using modern DevOps practices.
 
-The application is packaged as a Docker container, validated through automated testing, stored in Amazon Elastic Container Registry (ECR), and provisioned using Infrastructure as Code (Terraform).
+The application is packaged as a Docker image, stored in Amazon Elastic Container Registry (ECR), and deployed to Amazon ECS Fargate behind an Application Load Balancer (ALB). Infrastructure is provisioned and managed using Terraform, while GitHub Actions provides automated validation and security scanning.
 
-The end goal is to deploy the application to AWS ECS Fargate behind an Application Load Balancer (ALB) with automated CI validation through GitHub Actions.
+The project also includes production-oriented monitoring, scaling, encryption, and operational troubleshooting documentation.
 
 ---
 
@@ -16,17 +16,18 @@ This project demonstrates:
 
 - Infrastructure as Code (Terraform)
 - Continuous Integration (GitHub Actions)
-- Python Application Testing (Pytest)
 - Containerisation (Docker)
-- Container Registry Management (Amazon ECR)
-- AWS Networking Fundamentals
 - Amazon ECS Fargate
-- CloudWatch Logging
-- Security Scanning and Validation
+- Amazon ECR
+- AWS Networking
+- CloudWatch Monitoring
+- ECS Auto Scaling
+- Security Validation
+- Cloud Infrastructure Troubleshooting
 
 ---
 
-## Current Architecture
+## Architecture
 
 ```text
 GitHub
@@ -41,28 +42,42 @@ GitHub Actions
     └── Docker Build
             │
             ▼
-Docker Image
-            │
-            ▼
 Amazon ECR
             │
             ▼
-Amazon ECS Cluster
+Amazon ECS Fargate
             │
             ▼
-CloudWatch Logs
+Application Load Balancer
+            │
+            ▼
+End Users
+
+ECS Platform
+    │
+    ├── CloudWatch Logs
+    ├── CloudWatch Dashboard
+    ├── Container Insights
+    └── Auto Scaling Policies
 ```
 
 ---
 
 ## Current AWS Resources
 
-### Container Platform
+### Compute
+
+- Amazon ECS Cluster
+- ECS Fargate Service
+- ECS Task Definition
+- ECS Task Execution Role
+
+### Container Registry
 
 - Amazon ECR Repository
-- Amazon ECS Cluster
-- ECS Task Execution IAM Role
-- CloudWatch Log Group
+- ECR Lifecycle Policy
+- ECR Image Scanning
+- Immutable Image Tags
 
 ### Networking
 
@@ -70,14 +85,33 @@ CloudWatch Logs
 - Internet Gateway
 - Public Subnet A
 - Public Subnet B
-- Public Route Table
+- Route Table
 - Route Table Associations
+
+### Load Balancing
+
+- Application Load Balancer
+- Target Group
+- HTTP Listener
+
+### Monitoring
+
+- CloudWatch Log Group
+- CloudWatch Dashboard
+- ECS Container Insights
+
+### Scaling
+
+- ECS Auto Scaling Target
+- Target Tracking Policy
 
 ### Security
 
+- Security Groups
 - IAM Execution Role
-- Image Scanning Enabled in ECR
-- Terraform Security Validation via Checkov
+- CloudWatch Log Encryption (KMS)
+- Read-Only Root Filesystem
+- Checkov Security Scanning
 
 ---
 
@@ -87,6 +121,7 @@ CloudWatch Logs
 .
 ├── .github/
 │   └── workflows/
+│       ├── deploy.yml
 │       └── terraform.yml
 │
 ├── app/
@@ -97,15 +132,24 @@ CloudWatch Logs
 │   ├── compose.yaml
 │   └── tests/
 │
+├── docs/
+│   └── troubleshooting/
+│       └── ecr-image-recovery.md
+│
 ├── terraform/
+│   ├── alb.tf
+│   ├── autoscaling.tf
+│   ├── dashboard.tf
 │   ├── ecr.tf
+│   ├── ecr_lifecycle.tf
 │   ├── ecs.tf
 │   ├── iam.tf
+│   ├── kms.tf
 │   ├── locals.tf
 │   ├── network.tf
-│   ├── security_groups.tf
 │   ├── outputs.tf
 │   ├── providers.tf
+│   ├── security_groups.tf
 │   ├── variables.tf
 │   └── versions.tf
 │
@@ -125,8 +169,8 @@ Response:
 
 ```json
 {
-    "service": "devops-ecs-demo",
-    "status": "healthy"
+  "service": "devops-ecs-demo",
+  "status": "healthy"
 }
 ```
 
@@ -136,7 +180,7 @@ Response:
 
 ### Run Application
 
-```bash
+```powershell
 python app.py
 ```
 
@@ -148,9 +192,9 @@ http://localhost:5000
 
 ---
 
-### Run Unit Tests
+### Run Tests
 
-```bash
+```powershell
 pytest -v
 ```
 
@@ -158,7 +202,7 @@ pytest -v
 
 ### Build Docker Image
 
-```bash
+```powershell
 docker build -t devops-ecs-demo .
 ```
 
@@ -166,7 +210,7 @@ docker build -t devops-ecs-demo .
 
 ### Run Docker Container
 
-```bash
+```powershell
 docker run -p 5000:5000 devops-ecs-demo
 ```
 
@@ -182,31 +226,31 @@ http://localhost:5000
 
 ### Initialise Terraform
 
-```bash
+```powershell
 terraform init
 ```
 
 ### Validate Configuration
 
-```bash
+```powershell
 terraform validate
 ```
 
 ### Generate Plan
 
-```bash
+```powershell
 terraform plan
 ```
 
 ### Apply Infrastructure
 
-```bash
+```powershell
 terraform apply
 ```
 
 ### Destroy Infrastructure
 
-```bash
+```powershell
 terraform destroy
 ```
 
@@ -214,43 +258,46 @@ terraform destroy
 
 ## CI/CD Pipeline
 
-### Terraform Infrastructure Validation
+### Terraform Validation Workflow
 
-The Terraform pipeline automatically performs:
+The infrastructure workflow automatically performs:
 
-- Terraform Formatting Checks
+- Terraform Format Validation
 - Terraform Validation
-- TFLint Validation
+- TFLint Analysis
 - Checkov Security Scanning
 
-### Application Validation
+### Application Workflow
 
-The application pipeline automatically performs:
+The application workflow automatically performs:
 
-- Python Dependency Installation
-- Unit Testing via Pytest
-- Docker Image Build Verification
+- Source Checkout
+- Docker Build Validation
+- Deployment Pipeline Validation
 
 ---
 
 ## Security Controls
 
-Current security controls include:
+Current controls include:
 
-- Terraform Formatting Validation
-- Terraform Static Analysis
+- Terraform Validation
 - TFLint Best-Practice Checks
 - Checkov Security Scanning
 - ECR Image Scanning
-- Least-Privilege ECS Execution Role
+- ECR Immutable Tags
+- CloudWatch Log Encryption
+- Read-Only Container Filesystem
+- ECS Container Insights
+- IAM Least-Privilege Execution Role
 - Infrastructure Tagging Strategy
-- GitHub Actions CI Validation
+- GitHub Actions Validation
 
 ---
 
 ## Terraform Standards
 
-All AWS resources are tagged automatically using shared Terraform locals.
+All resources are tagged using shared Terraform locals.
 
 Example:
 
@@ -272,158 +319,140 @@ locals {
 
 ### Application
 
-- [X] Flask Application
-- [X] Health Endpoint
-- [X] Docker Containerisation
-- [X] Pytest Unit Testing
+- [x] Flask Application
+- [x] Health Endpoint
+- [x] Docker Containerisation
+- [x] Pytest Unit Testing
+
+### Infrastructure
+
+- [x] AWS VPC
+- [x] Public Subnets
+- [x] Internet Gateway
+- [x] Security Groups
+- [x] Application Load Balancer
+- [x] Target Group
+- [x] ECS Cluster
+- [x] ECS Service
+- [x] ECS Task Definition
+- [x] Amazon ECR
+- [x] CloudWatch Logging
+
+### Monitoring
+
+- [x] CloudWatch Dashboard
+- [x] ECS Container Insights
+
+### Scaling
+
+- [x] ECS Auto Scaling
+- [x] Target Tracking Policy
+
+### Security
+
+- [x] ECR Image Scanning
+- [x] ECR Immutable Tags
+- [x] CloudWatch Log Encryption
+- [x] Read-Only Root Filesystem
+- [x] Checkov Integration
 
 ### CI/CD
 
-- [X] GitHub Actions
-- [X] Terraform Validation
-- [X] TFLint Integration
-- [X] Checkov Integration
-- [X] Docker Build Validation
-
-### AWS
-
-- [X] Amazon ECR
-- [X] Amazon ECS Cluster
-- [X] CloudWatch Log Group
-- [X] IAM Execution Role
-- [X] VPC
-- [X] Public Subnets
-- [X] Internet Gateway
-- [X] Route Tables
+- [x] GitHub Actions
+- [x] Terraform Validation
+- [x] TFLint Integration
+- [x] Checkov Integration
+- [x] Docker Build Validation
 
 ---
 
 ## Current Status
 
-COMPLETED
+### Infrastructure Verification
 
-[✓] GitHub Repository Created
+✅ ECS Service deployed
 
-[✓] Flask Application
-      - / endpoint
-      - returns healthy JSON response
+✅ ECS Task healthy
 
-[✓] Pytest Testing
-      - endpoint tests
-      - response tests
+✅ ALB healthy
 
-[✓] Docker
-      - Dockerfile
-      - local build
-      - local run
+✅ Target Group healthy
 
-[✓] GitHub Actions
-      - Terraform Validation
-      - TFLint
-      - Checkov
-      - Pytest
-      - Docker Build
+✅ CloudWatch Logs enabled
 
-[✓] Amazon ECR
-      - Repository created
-      - Image pushed successfully
+✅ CloudWatch Dashboard enabled
 
-[✓] Networking
-      - VPC
-      - Internet Gateway
-      - Public Subnet A
-      - Public Subnet B
-      - Route Table
-      - Route Associations
+✅ ECS Container Insights enabled
 
-[✓] CloudWatch Log Group
+✅ Auto Scaling configured
 
-[✓] IAM ECS Task Execution Role
+✅ Application accessible through ALB
 
-[✓] ECS Cluster
+---
 
-[✓] ECS Task Definition
+### Verified Commands
 
-[✓] ECS Service
-
-[✓] ECS Security Group
-
-[✓] ALB Security Group
-
-[✓] Application Load Balancer
-
-[✓] Target Group
-
-[✓] Listener (HTTP:80)
-
-[✓] ECS Service Registered With Target Group
-
-[✓] Running Fargate Task
-
-[✓] Target Health Check Healthy
-
-[✓] Application Accessible Through ALB DNS
-
-VERIFIED COMMANDS
-
+```powershell
 aws ecs describe-services
+```
+
+Result:
+
+```text
 runningCount = 1
+```
 
+---
+
+```powershell
 aws elbv2 describe-target-health
-State = healthy
+```
 
-ALB URL returns:
+Result:
+
+```text
+healthy
+```
+
+---
+
+Application response:
+
+```json
 {
   "service": "devops-ecs-demo",
   "status": "healthy"
 }
-
-```PowerShell
-terraform state list
-aws_cloudwatch_log_group.app
-aws_ecr_repository.app
-aws_ecs_cluster.main
-aws_ecs_service.app
-aws_ecs_task_definition.app
-aws_iam_role.ecs_task_execution_role
-aws_iam_role_policy_attachment.ecs_task_execution
-aws_internet_gateway.main
-aws_lb.app
-aws_lb_listener.http
-aws_lb_target_group.app
-aws_route_table.public
-aws_route_table_association.public_a
-aws_route_table_association.public_b
-aws_security_group.alb
-aws_security_group.ecs_tasks
-aws_subnet.public_a
-aws_subnet.public_b
-aws_vpc.main
-
-terraform output
-alb_dns_name = "devops-ecs-demo-alb-1435200169.eu-north-1.elb.amazonaws.com"
-ecr_repository_url = "548722508417.dkr.ecr.eu-north-1.amazonaws.com/devops-ecs-demo"
-ecs_cluster_name = "devops-ecs-demo-cluster"
-ecs_execution_role_arn = "arn:aws:iam::548722508417:role/devops-ecs-demo-task-execution-role"
-ecs_service_name = "devops-ecs-demo-service"
-public_subnet_a = "subnet-0949243a7e808960d"
-public_subnet_b = "subnet-05241d52592db88b0"
-task_definition_arn = "arn:aws:ecs:eu-north-1:548722508417:task-definition/devops-ecs-demo:1"
-vpc_id = "vpc-0a92eaee848c1e55d"
 ```
 
-NEXT PHASE
+---
 
-Phase 14 - Production Features
+## Key Lessons Learned
 
-[ ] CloudWatch Dashboard
-[ ] CloudWatch Alarms
-[ ] ECS Auto Scaling
-[ ] Target Tracking Policies
-[ ] HTTPS via ACM
-[ ] Route53 DNS
-[ ] GitHub Actions ECS Deployment
-[ ] OIDC Authenticatio
+This project provided hands-on experience with:
+
+- Terraform resource lifecycle management
+- ECS Fargate deployments
+- ECR image management
+- CloudWatch monitoring
+- ECS rolling deployments
+- Container security hardening
+- CI/CD validation pipelines
+- Infrastructure troubleshooting
+- Diagnosing ECS task failures
+- Recovering from ECR repository replacement
+- Analysing Terraform resource replacement impacts
+
+---
+
+## Future Enhancements
+
+- [ ] HTTPS via ACM
+- [ ] Route53 DNS Integration
+- [ ] ALB Access Logging
+- [ ] CloudWatch Alarms
+- [ ] GitHub Actions ECS Deployment
+- [ ] GitHub OIDC Authentication
 
 ---
 
@@ -432,11 +461,12 @@ Phase 14 - Production Features
 ### Cloud
 
 - AWS
-- Amazon ECS
-- Amazon ECR
+- ECS Fargate
+- ECR
 - CloudWatch
 - IAM
 - VPC
+- Application Load Balancer
 
 ### Infrastructure as Code
 
@@ -463,23 +493,14 @@ Phase 14 - Production Features
 
 ---
 
-## Learning Outcomes
+## Troubleshooting
 
-This project demonstrates practical experience with:
-
-- Infrastructure as Code
-- CI/CD Pipeline Design
-- Containerisation
-- AWS Networking
-- Cloud Security Validation
-- Automated Testing
-- ECS Architecture
-- Cloud-Native Application Deployment
-
----
-
-# Troubleshooting
-
-Common operational issues can be found in:
+Operational runbooks:
 
 - [ECR Image Recovery](docs/troubleshooting/ecr-image-recovery.md)
+
+Future runbooks:
+
+- ECS Service Unhealthy
+- Terraform State Recoveryures
+- ECS Deployment Failures

@@ -134,9 +134,9 @@ latest
 ```powershell
 aws ecr get-login-password `
     --region eu-north-1 `
-| docker login `
+docker login`
     --username AWS `
-    --password-stdin 548722508417.dkr.ecr.eu-north-1.amazonaws.com
+    --password-stdin <ecr-repository-url>
 ```
 
 Expected output:
