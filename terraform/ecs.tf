@@ -7,6 +7,7 @@
 resource "aws_cloudwatch_log_group" "app" {
 
   name              = "/ecs/devops-ecs-demo"
+  kms_key_id = aws_kms_key.logs.arn
   retention_in_days = 1
 
   tags = local.common_tags
