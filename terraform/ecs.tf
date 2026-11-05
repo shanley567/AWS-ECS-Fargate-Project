@@ -24,7 +24,7 @@ resource "aws_ecs_cluster" "main" {
 
   name = "devops-ecs-demo-cluster"
 
-# Send metrics to cloudwatch for monitoring, debugging and autoscaling
+  # Send metrics to cloudwatch for monitoring, debugging and autoscaling
   setting {
     name  = "containerInsights"
     value = "enabled"
@@ -67,7 +67,7 @@ resource "aws_ecs_task_definition" "app" {
       essential = true
 
       # Prevents the container from writing to the root filesystem, enhancing security
-      "readonlyRootFilesystem": true
+      "readonlyRootFilesystem" : true
 
       portMappings = [
         {
