@@ -1,8 +1,8 @@
 resource "aws_ecr_repository" "app" {
 
-  name = "devops-ecs-demo"
+  name                 = "devops-ecs-demo"
   image_tag_mutability = "IMMUTABLE"
-    encryption_configuration {
+  encryption_configuration {
 
     encryption_type = "KMS"
 

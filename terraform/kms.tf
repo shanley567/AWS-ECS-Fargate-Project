@@ -6,7 +6,7 @@
 
 resource "aws_kms_key" "ecr" {
 
-  description             = "KMS key for ECR repository encryption"
+  description = "KMS key for ECR repository encryption"
 
   deletion_window_in_days = 7
 
@@ -23,7 +23,7 @@ resource "aws_kms_key" "ecr" {
 
 resource "aws_kms_key" "logs" {
 
-  description             = "KMS key for CloudWatch logs"
+  description = "KMS key for CloudWatch logs"
 
   deletion_window_in_days = 7
 
